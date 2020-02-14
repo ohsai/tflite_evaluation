@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tex_print import *
 import logging
-from tensorflow.keras.applications.vgg16 import VGG16 as target_dnn, preprocess_input
+from tensorflow.keras.applications.nasnet import NASNetMobile as target_dnn, preprocess_input
 import sklearn.metrics
 from imagenet import ImageNetDataset
 from tqdm import tqdm
@@ -28,10 +28,12 @@ class tfliteWrapper :
 
 if __name__ == '__main__' :
     title("TFLite model Accuracy Evaluation")
-
+    
+    '''
     subsection("Load Imagenet Dataset")
     imagenet_wrapper = ImageNetDataset(preprocess_input)
     x_test, y_test = imagenet_wrapper.load()
+    '''
 
     section("Create tflite model")
     model = target_dnn(weights='imagenet')
@@ -39,7 +41,7 @@ if __name__ == '__main__' :
     subsection("Convert keras model to tflite")
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
     # Quantize
-    converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_LATENCY]
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
     '''
     imagenet_ds = tf.data.Dataset.from_tensor_slices((x_test)).batch(1)
     def representative_dataset_gen():
@@ -56,7 +58,8 @@ if __name__ == '__main__' :
     tflite_model = converter.convert()
     tflite_model_path = "DNN.tflite"
     open(tflite_model_path, "wb").write(tflite_model)
-
+    
+    exit()
     section("TFLite Model Load")
     wrapper = tfliteWrapper(tflite_model_path)
 
